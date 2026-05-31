@@ -1,0 +1,49 @@
+version: v1
+
+deps:
+  - github.com/googleapis/googleapis@common-protos-1_3_1
+  - github.com/grpc-ecosystem/grpc-gateway@v2.20.0
+
+generate:
+  inputs:
+    - directory: api/proto
+  plugins:
+    - name: go
+      out: api/gen/go
+      opts:
+        paths: source_relative
+    - name: go-grpc
+      out: api/gen/go
+      opts:
+        paths: source_relative
+    - name: grpc-gateway
+      out: api/gen/go
+      opts:
+        paths: source_relative
+        generate_unbound_methods: true
+    - name: openapiv2
+      out: api/gen/openapi
+      opts:
+        logtostderr: true
+
+lint:
+  use:
+    - DIRECTORY_SAME_PACKAGE
+    - PACKAGE_DEFINED
+    - PACKAGE_DIRECTORY_MATCH
+    - PACKAGE_SAME_DIRECTORY
+    - FIELD_LOWER_SNAKE_CASE
+    - MESSAGE_PASCAL_CASE
+    - RPC_PASCAL_CASE
+    - SERVICE_PASCAL_CASE
+    - ENUM_PASCAL_CASE
+    - ENUM_VALUE_UPPER_SNAKE_CASE
+
+breaking:
+  use:
+    - FIELD_NO_DELETE
+    - FIELD_SAME_TYPE
+    - MESSAGE_NO_DELETE
+    - RPC_NO_DELETE
+    - SERVICE_NO_DELETE
+    - ENUM_VALUE_NO_DELETE

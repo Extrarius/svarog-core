@@ -1,0 +1,28 @@
+# Binaries
+/bin/
+*.exe
+*.out
+
+# Local environment
+.env
+.env.local
+*.local
+
+# Go
+*.test
+*.prof
+/vendor/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Generated proto code (regenerated via `make proto-gen`)
+/api/gen/go/
+/api/gen/openapi/
+
+# Docker volumes / runtime
+/deploy/.data/
+/tmp/
