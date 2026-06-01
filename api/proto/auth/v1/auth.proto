@@ -4,7 +4,7 @@ package auth.v1;
 
 import "google/api/annotations.proto";
 
-option go_package = "github.com/Extrarius/svarog-core/api/gen/go/auth/v1;authv1";
+option go_package = "github.com/Extrarius/svarog-core/api/gen/go/api/proto/auth/v1;authv1";
 
 // AuthService provides registration and session-based authentication.
 //

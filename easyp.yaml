@@ -12,19 +12,27 @@ generate:
       out: api/gen/go
       opts:
         paths: source_relative
+        Mgoogle/api/annotations.proto: google.golang.org/genproto/googleapis/api/annotations
+        Mgoogle/api/http.proto: google.golang.org/genproto/googleapis/api/annotations
     - name: go-grpc
       out: api/gen/go
       opts:
         paths: source_relative
+        Mgoogle/api/annotations.proto: google.golang.org/genproto/googleapis/api/annotations
+        Mgoogle/api/http.proto: google.golang.org/genproto/googleapis/api/annotations
     - name: grpc-gateway
       out: api/gen/go
       opts:
         paths: source_relative
         generate_unbound_methods: true
+        Mgoogle/api/annotations.proto: google.golang.org/genproto/googleapis/api/annotations
+        Mgoogle/api/http.proto: google.golang.org/genproto/googleapis/api/annotations
     - name: openapiv2
       out: api/gen/openapi
       opts:
         logtostderr: true
+        Mgoogle/api/annotations.proto: google.golang.org/genproto/googleapis/api/annotations
+        Mgoogle/api/http.proto: google.golang.org/genproto/googleapis/api/annotations
 
 lint:
   use:

@@ -38,7 +38,7 @@ ingester:
     replication_factor: 1
 
 ruler:
-  rule_path: /data/ruler
+  rule_path: /data/ruler-rules
   ring:
     kvstore:
       store: memberlist
@@ -47,7 +47,7 @@ ruler:
 ruler_storage:
   backend: filesystem
   filesystem:
-    dir: /data/ruler-store
+    dir: /data/ruler-storage
 
 alertmanager:
   data_dir: /data/alertmanager

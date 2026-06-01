@@ -8,9 +8,9 @@
 //   - business handlers (internal/app)
 //   - transport (gRPC + grpc-gateway)
 //
-// Business logic (Register / Login / Logout / Me) returns app.ErrNotImplemented
-// for now; the skeleton is intentionally placeholder-only until the gRPC
-// stubs are generated with `make proto-gen`.
+// The auth use-cases (Register / Login / Logout / Me) are fully wired:
+// requests flow HTTP gateway -> gRPC -> app -> Postgres, with opaque session
+// cookies bridged between the gateway and the gRPC auth interceptor.
 package main
 
 import (
@@ -122,9 +122,12 @@ func run() error {
 	}
 
 	gwServer, err := gateway.New(gateway.Options{
-		Addr:       cfg.HTTPAddr,
-		Logger:     log.With(slog.String("component", "gateway")),
-		GRPCTarget: grpcServer.Addr(),
+		Addr:         cfg.HTTPAddr,
+		Logger:       log.With(slog.String("component", "gateway")),
+		GRPCTarget:   grpcServer.Addr(),
+		CookieName:   cfg.Session.CookieName,
+		CookieDomain: cfg.Session.CookieDomain,
+		CookieSecure: cfg.Session.CookieSecure,
 	})
 	if err != nil {
 		return fmt.Errorf("build gateway server: %w", err)

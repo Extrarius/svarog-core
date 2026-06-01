@@ -85,6 +85,79 @@ services:
       - tempo
       - mimir
 
+  migrate:
+    image: migrate/migrate:v4.18.1
+    container_name: svarog-migrate
+    volumes:
+      - ../migrations:/migrations:ro
+    command:
+      - "-path=/migrations"
+      - "-database=postgres://${POSTGRES_USER:-svarog}:${POSTGRES_PASSWORD:-svarog}@postgres:5432/${POSTGRES_DB:-svarog}?sslmode=disable"
+      - "up"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  app:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: app
+    container_name: svarog-app
+    restart: unless-stopped
+    environment:
+      APP_ENV: docker
+      GRPC_ADDR: ":9090"
+      HTTP_ADDR: ":8080"
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER:-svarog}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-svarog}
+      POSTGRES_DB: ${POSTGRES_DB:-svarog}
+      POSTGRES_SSLMODE: disable
+      OTEL_EXPORTER_OTLP_ENDPOINT: otel-collector:4317
+      OTEL_EXPORTER_OTLP_INSECURE: "true"
+      OTEL_SERVICE_NAME: svarog-core
+      LOG_LEVEL: info
+      LOG_FORMAT: json
+    ports:
+      - "8080:8080"
+      - "9090:9090"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_healthy
+      otel-collector:
+        condition: service_started
+
+  mcp-http:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+      target: mcp-http
+    container_name: svarog-mcp-http
+    restart: unless-stopped
+    environment:
+      MCP_HTTP_ADDR: ":8000"
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: ${POSTGRES_USER:-svarog}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-svarog}
+      POSTGRES_DB: ${POSTGRES_DB:-svarog}
+      POSTGRES_SSLMODE: disable
+      SVAROG_HTTP_BASE: http://app:8080
+      APP_NAME: svarog-core
+      APP_VERSION: ${APP_VERSION:-0.0.1}
+    ports:
+      - "8000:8000"
+    depends_on:
+      app:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
 volumes:
   pgdata:
   lokidata:

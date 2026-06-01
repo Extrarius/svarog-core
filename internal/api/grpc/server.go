@@ -2,8 +2,7 @@
 //
 // The Server type assembles a *google.golang.org/grpc.Server with OTel and
 // recovery interceptors, exposes gRPC reflection and health endpoints, and
-// (TODO) registers the generated AuthService implementation once
-// `make proto-gen` has produced api/gen/go/auth/v1.
+// registers the generated AuthService and session auth interceptor.
 package grpc
 
 import (
@@ -18,6 +17,7 @@ import (
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 
+	authv1 "github.com/Extrarius/svarog-core/api/gen/go/api/proto/auth/v1"
 	"github.com/Extrarius/svarog-core/internal/app"
 )
 
@@ -52,6 +52,7 @@ func New(opts Options) (*Server, error) {
 
 	srv := grpc.NewServer(
 		grpc.StatsHandler(otelgrpc.NewServerHandler()),
+		grpc.ChainUnaryInterceptor(authUnaryInterceptor(opts.Handlers)),
 	)
 
 	// Standard endpoints: reflection (for grpcurl) + health (for orchestrators).
@@ -60,13 +61,7 @@ func New(opts Options) (*Server, error) {
 	healthpb.RegisterHealthServer(srv, healthSrv)
 	healthSrv.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
 
-	// TODO: after running `make proto-gen`, register the AuthService:
-	//
-	//   import authv1 "github.com/Extrarius/svarog-core/api/gen/go/auth/v1"
-	//   authv1.RegisterAuthServiceServer(srv, NewAuthService(opts.Handlers, opts.Logger))
-	//
-	// The handler struct is sketched in auth_service.go.
-	_ = opts.Handlers
+	authv1.RegisterAuthServiceServer(srv, NewAuthService(opts.Handlers, opts.Logger))
 
 	return &Server{
 		addr:     opts.Addr,

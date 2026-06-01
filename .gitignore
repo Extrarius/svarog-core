@@ -1,5 +1,6 @@
 # Binaries
-/bin/
+/bin
+/tools/apt-make//
 *.exe
 *.out
 

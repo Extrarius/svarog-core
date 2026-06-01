@@ -22,14 +22,15 @@ func NewSessions(pool *pgxpool.Pool) *Sessions {
 	return &Sessions{pool: pool}
 }
 
-const sessionColumns = "id, user_id, token_hash, expires_at, created_at, last_seen_at, revoked_at, user_agent, ip"
+// sessionSelectCols projects inet ip as text so pgx can scan into Go string.
+const sessionSelectCols = "id, user_id, token_hash, expires_at, created_at, last_seen_at, revoked_at, user_agent, COALESCE(host(ip), '') AS ip"
 
 // Create inserts a new session row.
 func (r *Sessions) Create(ctx context.Context, s app.Session) (app.Session, error) {
 	const q = `
 		INSERT INTO sessions (user_id, token_hash, expires_at, user_agent, ip)
 		VALUES ($1, $2, $3, $4, NULLIF($5, '')::inet)
-		RETURNING ` + sessionColumns
+		RETURNING ` + sessionSelectCols
 
 	row := r.pool.QueryRow(ctx, q,
 		s.UserID,
@@ -46,7 +47,7 @@ func (r *Sessions) Create(ctx context.Context, s app.Session) (app.Session, erro
 // are treated as missing.
 func (r *Sessions) FindActiveByTokenHash(ctx context.Context, tokenHash []byte, now time.Time) (app.Session, error) {
 	const q = `
-		SELECT ` + sessionColumns + `
+		SELECT ` + sessionSelectCols + `
 		FROM sessions
 		WHERE token_hash = $1
 		  AND revoked_at IS NULL
@@ -84,7 +85,6 @@ func scanSession(row pgx.Row) (app.Session, error) {
 	var (
 		s         app.Session
 		revokedAt *time.Time
-		ip        *string
 	)
 	if err := row.Scan(
 		&s.ID,
@@ -95,13 +95,10 @@ func scanSession(row pgx.Row) (app.Session, error) {
 		&s.LastSeenAt,
 		&revokedAt,
 		&s.UserAgent,
-		&ip,
+		&s.IP,
 	); err != nil {
 		return app.Session{}, fmt.Errorf("repo: scan session: %w", err)
 	}
 	s.RevokedAt = revokedAt
-	if ip != nil {
-		s.IP = *ip
-	}
 	return s, nil
 }
