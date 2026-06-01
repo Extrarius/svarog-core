@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "svarog-stdio": {
+      "command": "go",
+      "args": ["run", "./cmd/mcp-stdio"],
+      "env": {
+        "POSTGRES_HOST": "localhost",
+        "POSTGRES_PORT": "5432",
+        "POSTGRES_USER": "svarog",
+        "POSTGRES_PASSWORD": "svarog",
+        "POSTGRES_DB": "svarog",
+        "SVAROG_HTTP_BASE": "http://localhost:8080"
+      }
+    },
+    "svarog-http": {
+      "url": "http://localhost:8000/mcp"
+    },
+    "context7": {
+      "url": "https://mcp.context7.com/mcp"
+    }
+  }
+}

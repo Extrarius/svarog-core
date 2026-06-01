@@ -18,11 +18,15 @@ This file lives under [`doc/`](./) so the **repository root contains only [`READ
 ```bash
 make bootstrap        # install CLI tools (easyp, golang-migrate)
 cp .env.example .env  # local environment
-make up               # bring up Postgres + LGTM + OTel Collector
-make migrate          # apply migrations
+make up               # full stack: Postgres, LGTM, migrate, app, mcp-http
+make migrate          # apply migrations (local CLI, outside compose migrate job)
 make proto-gen        # generate Go/grpc/gateway/openapi stubs
-make run              # run the application locally
+make run              # run the application locally (without Docker app service)
+make run-mcp-stdio    # MCP over stdio for Cursor
+make run-mcp-http     # MCP streamable HTTP on :8000/mcp
 ```
+
+MCP details: [`doc/MCP.md`](./MCP.md). Cursor config: [`.cursor/mcp.json`](../.cursor/mcp.json).
 
 ## Architecture rules (Clean Architecture)
 
@@ -37,6 +41,7 @@ The single most important rule:
 - `internal/api/grpc` and `internal/api/gateway` are **transport adapters** that translate gRPC/HTTP calls into use case invocations.
 - `internal/config`, `internal/logger`, `internal/observability` are infrastructure adapters wired up from `cmd/main.go`.
 - `cmd/main.go` is the **composition root**: it constructs concrete adapters and injects them into use cases.
+- `internal/mcp` implements the **MCP server** (tools, resource, prompt) shared by `cmd/mcp-stdio` and `cmd/mcp-http`. It may use `pgx` and HTTP clients but is not part of `internal/app`.
 
 Dependency arrows always point inward, toward `internal/app`.
 

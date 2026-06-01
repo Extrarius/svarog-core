@@ -10,7 +10,13 @@ COMPOSE_FILE   := deploy/docker-compose.yml
 MIGRATIONS_DIR := migrations
 
 GO             ?= go
-DOCKER_COMPOSE ?= docker compose
+
+# Docker: native binary in PATH, or Docker Desktop on Windows (WSL2 without integration).
+DOCKER_BIN     ?= $(shell command -v docker 2>/dev/null || true)
+ifeq ($(DOCKER_BIN),)
+  DOCKER_BIN   := /mnt/c/Program Files/Docker/Docker/resources/bin/docker.exe
+endif
+DOCKER_COMPOSE ?= "$(DOCKER_BIN)" compose
 
 .PHONY: help
 help: ## Show this help
@@ -35,6 +41,14 @@ build: ## Build the application binary into $(BIN_DIR)/$(BIN_NAME)
 .PHONY: run
 run: ## Run the application locally
 	$(GO) run ./cmd
+
+.PHONY: run-mcp-stdio
+run-mcp-stdio: ## Run MCP server over stdio (for Cursor)
+	$(GO) run ./cmd/mcp-stdio
+
+.PHONY: run-mcp-http
+run-mcp-http: ## Run MCP server over streamable HTTP on :8000/mcp
+	$(GO) run ./cmd/mcp-http
 
 .PHONY: test
 test: ## Run unit tests
@@ -75,8 +89,8 @@ migrate-new: ## Create a new migration (usage: make migrate-new name=add_avatar)
 # Docker compose (Postgres + LGTM + OTel Collector)
 # -----------------------------------------------------------------------------
 .PHONY: up
-up: ## Bring up local infrastructure
-	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up -d
+up: ## Bring up full stack (infra + migrate + app + mcp-http)
+	$(DOCKER_COMPOSE) -f $(COMPOSE_FILE) up -d --build
 
 .PHONY: down
 down: ## Tear down local infrastructure

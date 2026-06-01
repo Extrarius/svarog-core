@@ -15,6 +15,8 @@
 
 ## Быстрый старт
 
+**WSL2 + Docker Desktop:** запустите Docker Desktop в Windows, затем `make up`. Если в WSL нет `make`, добавьте в PATH локальную копию: `export PATH="$PWD/tools/apt-make/usr/bin:$PATH"` (или `sudo apt install make`). Альтернатива без make: `./scripts/up.sh`.
+
 ```bash
 # 1. Установить вспомогательные CLI (easyp, migrate)
 make bootstrap
@@ -22,18 +24,25 @@ make bootstrap
 # 2. Подготовить окружение
 cp .env.example .env
 
-# 3. Поднять инфраструктуру (Postgres + LGTM + OTel Collector)
+# 3. Поднять весь стек (Postgres, LGTM, migrate, app, mcp-http)
 make up
 
-# 4. Накатить миграции
+# 4. (Локально без Docker для app) накатить миграции и запустить:
 make migrate
-
-# 5. Сгенерировать proto-код
-make proto-gen
-
-# 6. Запустить приложение
 make run
+
+# 5. Сгенерировать proto-код (если меняли .proto)
+make proto-gen
 ```
+
+После `make up`:
+
+- HTTP API: http://localhost:8080 (`/v1/auth/*`)
+- gRPC: `:9090`
+- MCP (HTTP): http://localhost:8000/mcp
+- Grafana: http://localhost:3000
+
+Подключение MCP в Cursor — [`doc/MCP.md`](doc/MCP.md), конфиг [`.cursor/mcp.json`](.cursor/mcp.json).
 
 ## Раскладка проекта
 
@@ -43,9 +52,15 @@ make run
 ├── doc/
 │   ├── README.md               # оглавление doc/
 │   ├── AGENTS.md               # инструкции для AI-агентов (EN)
-│   └── HOMEWORK_DIALOG.md      # выгрузка для домашки / ретро
+│   ├── HOMEWORK_DIALOG.md      # выгрузка для домашки 1
+│   ├── HOMEWORK_TWO.md         # домашка 2 (compose + MCP)
+│   └── MCP.md                  # MCP-серверы и сценарий в Cursor
 ├── .agents/                    # skills, workflows, rules, tasks, notes, checklists (EN)
-├── cmd/main.go                 # entry point
+├── cmd/
+│   ├── main.go                 # svarog-core API
+│   ├── mcp-stdio/              # MCP over stdio
+│   └── mcp-http/               # MCP over HTTP /mcp
+├── internal/mcp/               # общая логика MCP
 ├── internal/
 │   ├── app/                    # бизнес-логика (stdlib only)
 │   ├── adapters/repo/          # pgx-реализации портов
@@ -65,10 +80,12 @@ make run
 
 | Команда | Что делает |
 |---|---|
-| `make up` / `make down` | Поднять / погасить инфраструктуру |
+| `make up` / `make down` | Поднять / погасить весь стек (Docker) |
+| `./scripts/up.sh` | То же, без GNU make |
 | `make migrate` / `make migrate-down` | Накатить / откатить миграции |
 | `make proto-gen` | Сгенерировать Go/gateway/openapi из `.proto` |
 | `make lint` | `golangci-lint` + `easyp lint` |
 | `make test` | Запустить тесты |
 | `make build` | Собрать бинарь в `bin/svarog` |
 | `make run` | Локальный запуск приложения |
+| `make run-mcp-stdio` / `make run-mcp-http` | Локальный MCP |
