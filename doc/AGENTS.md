@@ -28,6 +28,24 @@ make run-mcp-http     # MCP streamable HTTP on :8000/mcp
 
 MCP details: [`doc/MCP.md`](./MCP.md). Cursor config: [`.cursor/mcp.json`](../.cursor/mcp.json).
 
+## Agent skills (skills.sh)
+
+Project skills live in [`.agents/skills/`](../.agents/skills/). Install marketplace skills with **Linux nvm npx** (not Windows `/mnt/c/.../npx` on WSL):
+
+```bash
+export NVM_DIR="$HOME/.nvm" && . "$NVM_DIR/nvm.sh"
+npx skills find <query>
+npx skills add <owner/repo> -a cursor -s <skill> --copy -y
+```
+
+Built-in playbooks for this repo:
+
+- `svarog-infra-up` — Docker compose + smoke tests
+- `svarog-go-codestyle` — architecture and style (see also `doc/AGENTS.md`, Obsidian `AI-Shared` via MCP `obsidian-shared`)
+- `svarog-mcp-tool` — extend `internal/mcp`
+
+Details: [`doc/HOMEWORK_THREE.md`](./HOMEWORK_THREE.md).
+
 ## Architecture rules (Clean Architecture)
 
 The single most important rule:

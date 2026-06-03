@@ -40,6 +40,7 @@
 1. **svarog-stdio** — `go run ./cmd/mcp-stdio` (нужны Postgres и поднятый `make run` для `register_user`).
 2. **svarog-http** — `http://localhost:8000/mcp` (после `docker compose up` или `make run-mcp-http`).
 3. **context7** — удалённый MCP `https://mcp.context7.com/mcp` (без `npx`; важно для WSL, где Windows-`npx` падает на UNC-путях проекта).
+4. **obsidian-shared** — filesystem MCP только на `AI-Shared/` в Obsidian vault (`/mnt/e/Obsidian/life/AI-Shared`). Основной vault **не** подключён.
 
 Опционально: API-ключ в `.cursor/mcp.json`:
 

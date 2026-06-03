@@ -6,7 +6,7 @@ Base layout (mirrors the course template):
 
 | Subfolder | Purpose |
 |-----------|---------|
-| [`skills/`](skills/) | Reusable agent skills (short, copy-pasteable playbooks). |
+| [`skills/`](skills/) | Agent skills ([skills.sh](https://skills.sh/) + project playbooks). See [`skills/README.md`](skills/README.md). |
 | [`workflows/`](workflows/) | Multi-step processes that chain several files or commands. |
 | [`rules/`](rules/) | Extra constraints and invariants **for this repo** (do not duplicate [`doc/AGENTS.md`](../doc/AGENTS.md) wholesale — link or extract deltas). |
 | [`tasks/`](tasks/) | Task formulations: “do X with steps Y–Z”. |
