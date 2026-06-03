@@ -17,6 +17,14 @@
     },
     "context7": {
       "url": "https://mcp.context7.com/mcp"
+    },
+    "obsidian-shared": {
+      "command": "/home/falih/.nvm/versions/node/v24.16.0/bin/npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/mnt/e/Obsidian/life/AI-Shared"
+      ]
     }
   }
 }

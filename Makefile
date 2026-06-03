@@ -71,6 +71,16 @@ proto-lint: ## Lint .proto files
 	easyp lint
 
 # -----------------------------------------------------------------------------
+# Agent skills (skills.sh) — requires nvm Node in WSL
+# -----------------------------------------------------------------------------
+NVM_SH := $(HOME)/.nvm/nvm.sh
+SKILLS_NPX := bash -lc 'source $(NVM_SH) && npx skills'
+
+.PHONY: skills-list
+skills-list: ## List project agent skills (skills.sh)
+	$(SKILLS_NPX) list
+
+# -----------------------------------------------------------------------------
 # Migrations
 # -----------------------------------------------------------------------------
 .PHONY: migrate

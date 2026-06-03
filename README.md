@@ -44,6 +44,8 @@ make proto-gen
 
 Подключение MCP в Cursor — [`doc/MCP.md`](doc/MCP.md), конфиг [`.cursor/mcp.json`](.cursor/mcp.json).
 
+**Agent Skills** ([skills.sh](https://skills.sh/)): скиллы в [`.agents/skills/`](.agents/skills/), установка через `npx skills` (в WSL — Node из [nvm](https://github.com/nvm-sh/nvm)). См. [`doc/HOMEWORK_THREE.md`](doc/HOMEWORK_THREE.md).
+
 ## Раскладка проекта
 
 ```
@@ -54,6 +56,7 @@ make proto-gen
 │   ├── AGENTS.md               # инструкции для AI-агентов (EN)
 │   ├── HOMEWORK_DIALOG.md      # выгрузка для домашки 1
 │   ├── HOMEWORK_TWO.md         # домашка 2 (compose + MCP)
+│   ├── HOMEWORK_THREE.md       # домашка 3 (skills.sh)
 │   └── MCP.md                  # MCP-серверы и сценарий в Cursor
 ├── .agents/                    # skills, workflows, rules, tasks, notes, checklists (EN)
 ├── cmd/
@@ -89,3 +92,4 @@ make proto-gen
 | `make build` | Собрать бинарь в `bin/svarog` |
 | `make run` | Локальный запуск приложения |
 | `make run-mcp-stdio` / `make run-mcp-http` | Локальный MCP |
+| `npx skills list` | Список project skills (нужен nvm Node в WSL) |
