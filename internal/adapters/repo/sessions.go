@@ -81,6 +81,71 @@ func (r *Sessions) Revoke(ctx context.Context, sessionID string, at time.Time) e
 	return nil
 }
 
+// ListActiveByUserID returns active sessions for a user ordered by last_seen_at desc.
+func (r *Sessions) ListActiveByUserID(ctx context.Context, userID string, now time.Time) ([]app.SessionSummary, error) {
+	const q = `
+		SELECT id, user_agent, COALESCE(host(ip), '') AS ip, created_at, last_seen_at
+		FROM sessions
+		WHERE user_id = $1
+		  AND revoked_at IS NULL
+		  AND expires_at > $2
+		ORDER BY last_seen_at DESC`
+
+	rows, err := r.pool.Query(ctx, q, userID, now)
+	if err != nil {
+		return nil, fmt.Errorf("repo: list sessions: %w", err)
+	}
+	defer rows.Close()
+
+	var out []app.SessionSummary
+	for rows.Next() {
+		var s app.SessionSummary
+		if err := rows.Scan(&s.ID, &s.UserAgent, &s.IP, &s.CreatedAt, &s.LastSeenAt); err != nil {
+			return nil, fmt.Errorf("repo: scan session summary: %w", err)
+		}
+		out = append(out, s)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("repo: list sessions rows: %w", err)
+	}
+	return out, nil
+}
+
+// RevokeOwned marks a session revoked only when it belongs to the given user.
+func (r *Sessions) RevokeOwned(ctx context.Context, sessionID, userID string, at time.Time) error {
+	const q = `
+		UPDATE sessions
+		SET revoked_at = $3
+		WHERE id = $1
+		  AND user_id = $2
+		  AND revoked_at IS NULL`
+
+	tag, err := r.pool.Exec(ctx, q, sessionID, userID, at)
+	if err != nil {
+		return fmt.Errorf("repo: revoke owned session: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return app.ErrSessionNotFound
+	}
+	return nil
+}
+
+// RevokeAllExcept revokes all active sessions for a user except the given one.
+func (r *Sessions) RevokeAllExcept(ctx context.Context, userID, exceptSessionID string, at time.Time) (int, error) {
+	const q = `
+		UPDATE sessions
+		SET revoked_at = $3
+		WHERE user_id = $1
+		  AND id != $2
+		  AND revoked_at IS NULL`
+
+	tag, err := r.pool.Exec(ctx, q, userID, exceptSessionID, at)
+	if err != nil {
+		return 0, fmt.Errorf("repo: revoke all except: %w", err)
+	}
+	return int(tag.RowsAffected()), nil
+}
+
 func scanSession(row pgx.Row) (app.Session, error) {
 	var (
 		s         app.Session

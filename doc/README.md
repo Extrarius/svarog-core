@@ -8,6 +8,8 @@ Markdown project docs live here so the repository root stays limited to **`READM
 | [`HOMEWORK_DIALOG.md`](./HOMEWORK_DIALOG.md) | Course methodology export / retro (Russian). |
 | [`HOMEWORK_TWO.md`](./HOMEWORK_TWO.md) | Homework 2: Docker app + MCP (Russian). |
 | [`HOMEWORK_THREE.md`](./HOMEWORK_THREE.md) | Homework 3: skills.sh + custom skills (Russian). |
+| [`HOMEWORK_FOUR.md`](./HOMEWORK_FOUR.md) | Homework 4: OpenSpec / SDD (Russian). |
+| [`dialogs/`](./dialogs/) | Agent dialogue exports (OpenSpec iterations). |
 | [`MCP.md`](./MCP.md) | MCP servers, Cursor setup, verification scenario. |
 
 Agent task templates remain under [`.agents/`](../.agents/).

@@ -46,6 +46,17 @@ Built-in playbooks for this repo:
 
 Details: [`doc/HOMEWORK_THREE.md`](./HOMEWORK_THREE.md).
 
+## OpenSpec (SDD)
+
+Specification-Driven Development via [OpenSpec](https://github.com/Fission-AI/OpenSpec):
+
+- Config: [`openspec/config.yaml`](../openspec/config.yaml)
+- Active changes: [`openspec/changes/`](../openspec/changes/)
+- Cursor slash commands: [`.cursor/commands/opsx-*.md`](../.cursor/commands/)
+- Workflow: propose/spec → `/opsx:apply` → iterate spec → apply again
+
+Details: [`doc/HOMEWORK_FOUR.md`](./HOMEWORK_FOUR.md).
+
 ## Architecture rules (Clean Architecture)
 
 The single most important rule:

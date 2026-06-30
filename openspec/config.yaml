@@ -1,0 +1,17 @@
+schema: spec-driven
+
+  context: |
+    Go 1.25 monolith (svarog-core). Clean Architecture: internal/app is stdlib-only.
+    Transport: gRPC + grpc-gateway. DB: PostgreSQL 17.7 via pgx/v5.
+    Auth: session cookies (sid), bcrypt passwords. Proto via easyp.
+    No go build for verification — use go vet / go run.
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
