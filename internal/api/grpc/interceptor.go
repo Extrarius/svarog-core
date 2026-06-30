@@ -41,8 +41,11 @@ func IdentityFromContext(ctx context.Context) (app.MeOutput, bool) {
 // protectedMethods lists fully-qualified gRPC methods that require a valid
 // session. Register and Login are intentionally public.
 var protectedMethods = map[string]bool{
-	"/auth.v1.AuthService/Logout": true,
-	"/auth.v1.AuthService/Me":     true,
+	"/auth.v1.AuthService/Logout":        true,
+	"/auth.v1.AuthService/Me":            true,
+	"/auth.v1.AuthService/ListSessions":             true,
+	"/auth.v1.AuthService/RevokeSession":            true,
+	"/auth.v1.AuthService/RevokeAllOtherSessions":   true,
 }
 
 // authUnaryInterceptor validates the session token for protected methods and

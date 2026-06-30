@@ -97,6 +97,83 @@ func (s *AuthService) Me(ctx context.Context, _ *authv1.MeRequest) (*authv1.MeRe
 	return &authv1.MeResponse{UserId: id.UserID, Email: id.Email}, nil
 }
 
+// ListSessions returns active sessions for the authenticated user.
+func (s *AuthService) ListSessions(ctx context.Context, _ *authv1.ListSessionsRequest) (*authv1.ListSessionsResponse, error) {
+	id, ok := IdentityFromContext(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "no session")
+	}
+
+	out, err := s.handlers.ListSessions(ctx, app.ListSessionsInput{
+		UserID:           id.UserID,
+		CurrentSessionID: id.SessionID,
+	})
+	if err != nil {
+		return nil, status.Error(codes.Internal, "list sessions failed")
+	}
+
+	sessions := make([]*authv1.SessionInfo, 0, len(out.Sessions))
+	for _, item := range out.Sessions {
+		sessions = append(sessions, &authv1.SessionInfo{
+			Id:         item.ID,
+			UserAgent:  item.UserAgent,
+			Ip:         item.IP,
+			CreatedAt:  item.CreatedAt.UTC().Format(time.RFC3339),
+			LastSeenAt: item.LastSeenAt.UTC().Format(time.RFC3339),
+			IsCurrent:  item.IsCurrent,
+		})
+	}
+	return &authv1.ListSessionsResponse{Sessions: sessions}, nil
+}
+
+// RevokeSession revokes one session owned by the authenticated user.
+func (s *AuthService) RevokeSession(ctx context.Context, req *authv1.RevokeSessionRequest) (*authv1.RevokeSessionResponse, error) {
+	id, ok := IdentityFromContext(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "no session")
+	}
+
+	out, err := s.handlers.RevokeSession(ctx, app.RevokeSessionInput{
+		UserID:           id.UserID,
+		CurrentSessionID: id.SessionID,
+		SessionID:        req.GetSessionId(),
+	})
+	switch {
+	case errors.Is(err, app.ErrSessionNotFound):
+		return nil, status.Error(codes.NotFound, "session not found")
+	case err != nil:
+		return nil, status.Error(codes.Internal, "revoke session failed")
+	}
+
+	if out.RevokedCurrent {
+		if err := grpc.SetHeader(ctx, metadata.Pairs(MetaClearSession, "1")); err != nil {
+			s.log.WarnContext(ctx, "set revoke header failed", slog.Any("error", err))
+		}
+	}
+	return &authv1.RevokeSessionResponse{}, nil
+}
+
+// RevokeAllOtherSessions revokes all sessions except the current one.
+func (s *AuthService) RevokeAllOtherSessions(ctx context.Context, _ *authv1.RevokeAllOtherSessionsRequest) (*authv1.RevokeAllOtherSessionsResponse, error) {
+	id, ok := IdentityFromContext(ctx)
+	if !ok {
+		return nil, status.Error(codes.Unauthenticated, "no session")
+	}
+
+	out, err := s.handlers.RevokeAllOtherSessions(ctx, app.RevokeAllOtherSessionsInput{
+		UserID:           id.UserID,
+		CurrentSessionID: id.SessionID,
+	})
+	switch {
+	case errors.Is(err, app.ErrSessionNotFound):
+		return nil, status.Error(codes.Unauthenticated, "no session")
+	case err != nil:
+		return nil, status.Error(codes.Internal, "revoke other sessions failed")
+	}
+
+	return &authv1.RevokeAllOtherSessionsResponse{RevokedCount: int32(out.RevokedCount)}, nil
+}
+
 // sanitizeClientIP keeps the first valid IP from X-Forwarded-For style values.
 func sanitizeClientIP(raw string) string {
 	raw = strings.TrimSpace(strings.Split(raw, ",")[0])

@@ -55,12 +55,24 @@ type UserRepo interface {
 	FindByID(ctx context.Context, id string) (User, error)
 }
 
+// SessionSummary is a session row safe to expose outside the repository.
+type SessionSummary struct {
+	ID         string
+	UserAgent  string
+	IP         string
+	CreatedAt  time.Time
+	LastSeenAt time.Time
+}
+
 // SessionRepo abstracts persistence of sessions.
 type SessionRepo interface {
 	Create(ctx context.Context, s Session) (Session, error)
 	FindActiveByTokenHash(ctx context.Context, tokenHash []byte, now time.Time) (Session, error)
+	ListActiveByUserID(ctx context.Context, userID string, now time.Time) ([]SessionSummary, error)
 	TouchLastSeen(ctx context.Context, sessionID string, at time.Time) error
 	Revoke(ctx context.Context, sessionID string, at time.Time) error
+	RevokeOwned(ctx context.Context, sessionID, userID string, at time.Time) error
+	RevokeAllExcept(ctx context.Context, userID, exceptSessionID string, at time.Time) (int, error)
 }
 
 // Hasher hashes and verifies passwords (typically bcrypt in production).

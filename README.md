@@ -46,6 +46,8 @@ make proto-gen
 
 **Agent Skills** ([skills.sh](https://skills.sh/)): скиллы в [`.agents/skills/`](.agents/skills/), установка через `npx skills` (в WSL — Node из [nvm](https://github.com/nvm-sh/nvm)). См. [`doc/HOMEWORK_THREE.md`](doc/HOMEWORK_THREE.md).
 
+**OpenSpec (SDD):** спеки в [`openspec/`](openspec/), change `manage-sessions` — управление сессиями. См. [`doc/HOMEWORK_FOUR.md`](doc/HOMEWORK_FOUR.md).
+
 ## Раскладка проекта
 
 ```
@@ -57,7 +59,10 @@ make proto-gen
 │   ├── HOMEWORK_DIALOG.md      # выгрузка для домашки 1
 │   ├── HOMEWORK_TWO.md         # домашка 2 (compose + MCP)
 │   ├── HOMEWORK_THREE.md       # домашка 3 (skills.sh)
+│   ├── HOMEWORK_FOUR.md        # домашка 4 (OpenSpec / SDD)
+│   ├── dialogs/                # выгрузки диалогов агента (OpenSpec)
 │   └── MCP.md                  # MCP-серверы и сценарий в Cursor
+├── openspec/                   # OpenSpec: спеки и changes (SDD)
 ├── .agents/                    # skills, workflows, rules, tasks, notes, checklists (EN)
 ├── cmd/
 │   ├── main.go                 # svarog-core API
