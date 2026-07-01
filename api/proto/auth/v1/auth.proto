@@ -41,6 +41,28 @@ service AuthService {
       get: "/v1/auth/me"
     };
   }
+
+  // ListSessions returns active sessions for the authenticated user.
+  rpc ListSessions(ListSessionsRequest) returns (ListSessionsResponse) {
+    option (google.api.http) = {
+      get: "/v1/sessions"
+    };
+  }
+
+  // RevokeSession revokes one of the authenticated user's sessions.
+  rpc RevokeSession(RevokeSessionRequest) returns (RevokeSessionResponse) {
+    option (google.api.http) = {
+      delete: "/v1/sessions/{session_id}"
+    };
+  }
+
+  // RevokeAllOtherSessions revokes all sessions except the current one.
+  rpc RevokeAllOtherSessions(RevokeAllOtherSessionsRequest) returns (RevokeAllOtherSessionsResponse) {
+    option (google.api.http) = {
+      post: "/v1/sessions/revoke-others"
+      body: "*"
+    };
+  }
 }
 
 message RegisterRequest {
@@ -70,4 +92,31 @@ message MeRequest {}
 message MeResponse {
   string user_id = 1;
   string email = 2;
+}
+
+message ListSessionsRequest {}
+
+message SessionInfo {
+  string id = 1;
+  string user_agent = 2;
+  string ip = 3;
+  string created_at = 4;
+  string last_seen_at = 5;
+  bool is_current = 6;
+}
+
+message ListSessionsResponse {
+  repeated SessionInfo sessions = 1;
+}
+
+message RevokeSessionRequest {
+  string session_id = 1;
+}
+
+message RevokeSessionResponse {}
+
+message RevokeAllOtherSessionsRequest {}
+
+message RevokeAllOtherSessionsResponse {
+  int32 revoked_count = 1;
 }

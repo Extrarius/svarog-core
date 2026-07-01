@@ -238,6 +238,120 @@ func (h *Handlers) Me(ctx context.Context, in MeInput) (MeOutput, error) {
 	return MeOutput{UserID: user.ID, Email: user.Email, SessionID: session.ID}, nil
 }
 
+// ListSessionsInput identifies the caller for session listing.
+type ListSessionsInput struct {
+	UserID           string
+	CurrentSessionID string
+}
+
+// ListSessionsOutput holds active sessions for the user.
+type ListSessionsOutput struct {
+	Sessions []SessionListItem
+}
+
+// SessionListItem is one row returned by ListSessions.
+type SessionListItem struct {
+	ID         string
+	UserAgent  string
+	IP         string
+	CreatedAt  time.Time
+	LastSeenAt time.Time
+	IsCurrent  bool
+}
+
+// ListSessions returns active sessions for the authenticated user.
+func (h *Handlers) ListSessions(ctx context.Context, in ListSessionsInput) (ListSessionsOutput, error) {
+	if in.UserID == "" {
+		return ListSessionsOutput{}, ErrSessionNotFound
+	}
+
+	now := h.clock.Now()
+	rows, err := h.sessions.ListActiveByUserID(ctx, in.UserID, now)
+	if err != nil {
+		return ListSessionsOutput{}, fmt.Errorf("list sessions: %w", err)
+	}
+
+	items := make([]SessionListItem, 0, len(rows))
+	for _, row := range rows {
+		items = append(items, SessionListItem{
+			ID:         row.ID,
+			UserAgent:  row.UserAgent,
+			IP:         row.IP,
+			CreatedAt:  row.CreatedAt,
+			LastSeenAt: row.LastSeenAt,
+			IsCurrent:  row.ID == in.CurrentSessionID,
+		})
+	}
+
+	return ListSessionsOutput{Sessions: items}, nil
+}
+
+// RevokeSessionInput revokes a session owned by the caller.
+type RevokeSessionInput struct {
+	UserID           string
+	CurrentSessionID string
+	SessionID        string
+}
+
+// RevokeSessionOutput indicates whether the revoked session was the current one.
+type RevokeSessionOutput struct {
+	RevokedCurrent bool
+}
+
+// RevokeSession revokes a session that belongs to the authenticated user.
+func (h *Handlers) RevokeSession(ctx context.Context, in RevokeSessionInput) (RevokeSessionOutput, error) {
+	if in.UserID == "" || in.SessionID == "" {
+		return RevokeSessionOutput{}, ErrSessionNotFound
+	}
+
+	now := h.clock.Now()
+	err := h.sessions.RevokeOwned(ctx, in.SessionID, in.UserID, now)
+	if errors.Is(err, ErrSessionNotFound) {
+		return RevokeSessionOutput{}, ErrSessionNotFound
+	}
+	if err != nil {
+		return RevokeSessionOutput{}, fmt.Errorf("revoke session: %w", err)
+	}
+
+	revokedCurrent := in.SessionID == in.CurrentSessionID
+	h.log.InfoContext(ctx, "session revoked by user",
+		slog.String("session_id", in.SessionID),
+		slog.String("user_id", in.UserID),
+		slog.Bool("revoked_current", revokedCurrent),
+	)
+	return RevokeSessionOutput{RevokedCurrent: revokedCurrent}, nil
+}
+
+// RevokeAllOtherSessionsInput revokes every session except the current one.
+type RevokeAllOtherSessionsInput struct {
+	UserID           string
+	CurrentSessionID string
+}
+
+// RevokeAllOtherSessionsOutput reports how many sessions were revoked.
+type RevokeAllOtherSessionsOutput struct {
+	RevokedCount int
+}
+
+// RevokeAllOtherSessions revokes all active sessions for the user except current.
+func (h *Handlers) RevokeAllOtherSessions(ctx context.Context, in RevokeAllOtherSessionsInput) (RevokeAllOtherSessionsOutput, error) {
+	if in.UserID == "" || in.CurrentSessionID == "" {
+		return RevokeAllOtherSessionsOutput{}, ErrSessionNotFound
+	}
+
+	now := h.clock.Now()
+	count, err := h.sessions.RevokeAllExcept(ctx, in.UserID, in.CurrentSessionID, now)
+	if err != nil {
+		return RevokeAllOtherSessionsOutput{}, fmt.Errorf("revoke all other sessions: %w", err)
+	}
+
+	h.log.InfoContext(ctx, "other sessions revoked",
+		slog.String("user_id", in.UserID),
+		slog.Int("revoked_count", count),
+	)
+	return RevokeAllOtherSessionsOutput{RevokedCount: count}, nil
+}
+
 // normalizeEmail lower-cases and trims surrounding whitespace so that lookups
 // and uniqueness checks are case-insensitive regardless of client input.
 func normalizeEmail(email string) string {
