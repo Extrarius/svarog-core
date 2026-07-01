@@ -4,6 +4,7 @@ Use this folder for **extra** constraints that are too granular for [`doc/AGENTS
 
 Hard rules already live in [`doc/AGENTS.md`](../doc/AGENTS.md) (e.g. `internal/app` import policy). Add files such as:
 
+- `git-commits.md` — no Cursor co-author trailers; no screenshots in git
 - `proto-naming.md` — package and RPC naming beyond the lint config
 - `migration-safety.md` — table-lock expectations for this service
 
