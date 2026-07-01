@@ -17,6 +17,7 @@ This file lives under [`doc/`](./) so the **repository root contains only [`READ
 
 ```bash
 make bootstrap        # install CLI tools (easyp, golang-migrate)
+./scripts/install-git-hooks.sh  # strip Cursor Co-authored-by from commits (once per clone)
 cp .env.example .env  # local environment
 make up               # full stack: Postgres, LGTM, migrate, app, mcp-http
 make migrate          # apply migrations (local CLI, outside compose migrate job)
