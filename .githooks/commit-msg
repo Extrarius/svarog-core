@@ -1,0 +1,13 @@
+#!/bin/sh
+# Strip Cursor co-author trailers — they must not appear on GitHub Contributors.
+# Installed via: scripts/install-git-hooks.sh
+
+msg_file="$1"
+[ -f "$msg_file" ] || exit 0
+
+tmp=$(mktemp)
+grep -v -E '^Co-authored-by: (Cursor <cursoragent@cursor.com>|cursoragent)' "$msg_file" > "$tmp" || true
+# trim trailing blank lines
+sed -i -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$tmp" 2>/dev/null || sed -i '' -e :a -e '/^\n*$/{$d;N;ba' -e '}' "$tmp" 2>/dev/null || true
+mv "$tmp" "$msg_file"
+exit 0

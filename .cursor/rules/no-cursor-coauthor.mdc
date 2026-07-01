@@ -1,0 +1,19 @@
+---
+description: Never add Cursor as co-author on git commits
+alwaysApply: true
+---
+
+# Git commits — no Cursor co-author
+
+**NEVER** add `Co-authored-by` trailers that attribute commits to Cursor or cursoragent.
+
+Forbidden examples:
+
+```
+Co-authored-by: Cursor <cursoragent@cursor.com>
+Co-authored-by: cursoragent <cursoragent@cursor.com>
+```
+
+- Commits MUST use only the repository owner's `user.name` and `user.email` from git config.
+- Do not append co-author lines automatically — Cursor must not appear as a GitHub contributor.
+- If a commit message already contains such a trailer, remove it before pushing.
